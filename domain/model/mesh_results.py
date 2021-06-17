@@ -6,6 +6,11 @@ from domain.geo import Coordinates
 from domain.metric_type import MetricType
 from domain.types import AgentID, MetricValue
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class Agent:
@@ -102,7 +107,10 @@ class ConnectionMatrix:
 
 
 class MeshResults:
-    """Internal representation of Mesh Test results; independent of source data structure like http or grpc synthetics client"""
+    """
+    Internal representation of Mesh Test results
+    independent of source data structure like http or grpc synthetics client
+    """
 
     def __init__(
         self,
@@ -118,8 +126,17 @@ class MeshResults:
         self.agents = agents
         self._connection_matrix = ConnectionMatrix(rows)
 
-    def filter(self, from_agent, to_agent: AgentID, metric: MetricType) -> List[Tuple[datetime, MetricValue]]:
+    def filter(
+            self, from_agent: AgentID,
+            to_agent: AgentID,
+            metric: MetricType
+    ) -> List[Tuple[Optional[datetime], Optional[MetricValue]]]:
+        logger.debug("MeshResults.filter: from_agent: %s to_agent: %s, metric: %s", from_agent, to_agent, metric.value)
         items = self.connection(from_agent, to_agent).health
+        logger.debug("MeshResults.filter: got %d health entries", len(items))
+
+        if not items:
+            return [(None, None)]
 
         if metric == MetricType.LATENCY:
             return [(i.time, i.latency_millisec) for i in items]
@@ -128,7 +145,8 @@ class MeshResults:
         if metric == MetricType.PACKET_LOSS:
             return [(i.time, i.packet_loss_percent) for i in items]
 
-        return []
+        logger.debug("MeshResults.filter: unknown metric type")
+        return [(None, None)]
 
     def connection(self, from_agent, to_agent: AgentID) -> MeshColumn:
         return self._connection_matrix.connection(from_agent, to_agent)
