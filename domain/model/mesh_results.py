@@ -48,7 +48,7 @@ class Agents:
 
 @dataclass
 class Metric:
-    """ Represents single from->to connection metric """
+    """Represents single from->to connection metric"""
 
     health: str = ""  # "healthy", "warning", ...
     value: MetricValue = MetricValue()
@@ -56,7 +56,7 @@ class Metric:
 
 @dataclass
 class HealthItem:
-    """ Represents single from->to connection health timeseries entry """
+    """Represents single from->to connection health timeseries entry"""
 
     jitter_millisec: MetricValue
     latency_millisec: MetricValue
@@ -66,7 +66,7 @@ class HealthItem:
 
 @dataclass
 class MeshColumn:
-    """ Represents connection "to" endpoint """
+    """Represents connection "to" endpoint"""
 
     agent_id: AgentID = AgentID()
     jitter_millisec: Metric = Metric()
@@ -77,7 +77,7 @@ class MeshColumn:
 
 @dataclass
 class MeshRow:
-    """ Represents connection "from" endpoint """
+    """Represents connection "from" endpoint"""
 
     agent_id: AgentID
     columns: List[MeshColumn]
@@ -127,9 +127,7 @@ class MeshResults:
         self._connection_matrix = ConnectionMatrix(rows)
 
     def filter(
-            self, from_agent: AgentID,
-            to_agent: AgentID,
-            metric: MetricType
+        self, from_agent: AgentID, to_agent: AgentID, metric: MetricType
     ) -> List[Tuple[Optional[datetime], Optional[MetricValue]]]:
         logger.debug("MeshResults.filter: from_agent: %s to_agent: %s, metric: %s", from_agent, to_agent, metric.value)
         items = self.connection(from_agent, to_agent).health
