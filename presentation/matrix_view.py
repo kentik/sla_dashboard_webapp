@@ -54,7 +54,7 @@ class MatrixView:
                     children=[
                         html.H2(
                             children=[
-                                html.Span("Data timestamp"),
+                                html.Span("Last update: "),
                                 html.Span(
                                     "<test_results_date_time>",
                                     className="header-timestamp",
@@ -90,7 +90,7 @@ class MatrixView:
                         html.Div(
                             children=[
                                 html.Div(
-                                    dcc.Graph(id=self.MATRIX, style={"width": 900, "height": 750}, figure=fig),
+                                    dcc.Graph(id=self.MATRIX, figure=fig, responsive=True),
                                     className="chart__default",
                                 ),
                                 html.Div(
@@ -139,13 +139,14 @@ class MatrixView:
         data = self.make_figure_data(mesh, metric)
         annotations = self.make_figure_annotations(mesh, metric)
         layout = dict(
-            margin=dict(l=150, b=50, t=100, r=50),
+            margin=dict(l=200, b=0, t=100, r=0),
             modebar={"orientation": "v"},
             annotations=annotations,
             xaxis=dict(side="top", ticks="", scaleanchor="y"),
             yaxis=dict(side="left", ticks=""),
             hovermode="closest",
             showlegend=False,
+            autosize=True,
         )
 
         return {"data": [data], "layout": layout}
@@ -165,6 +166,7 @@ class MatrixView:
             name="",
             showscale=False,
             colorscale=self.make_color_scale(),
+            autosize=True,
         )
 
     def make_sla_levels(self, mesh: MeshResults, metric: MetricType) -> List[SLALevelColumn]:
@@ -229,10 +231,10 @@ class MatrixView:
     @staticmethod
     def get_text(metric: MetricType, cell: MeshColumn) -> str:
         if metric == MetricType.LATENCY:
-            return f"<b>{(cell.latency_millisec.value):.2f} ms</b>"
+            return f"{(cell.latency_millisec.value):.2f}"
         if metric == MetricType.JITTER:
-            return f"<b>{(cell.jitter_millisec.value):.2f} ms</b>"
-        return f"<b>{cell.packet_loss_percent.value:.1f}%</b>"
+            return f"{(cell.jitter_millisec.value):.2f}"
+        return f"{cell.packet_loss_percent.value:.1f}"
 
     def make_hover_text(self, mesh: MeshResults) -> List[List[str]]:
         matrix_hover_text: List[List[str]] = []

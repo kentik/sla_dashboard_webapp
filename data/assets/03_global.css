@@ -43,10 +43,8 @@ h3 {
 
 /* Space containing all the elements, as opposed to the unused space on the left and right side */
 .main_container{
+  height: 100vh;
   text-align: center;
-  width: 60vw;
-  min-width: 900px;
   padding: 30px;
-  margin:auto;
   background-color: var(--white-0);
 }

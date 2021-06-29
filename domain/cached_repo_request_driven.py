@@ -16,7 +16,7 @@ class CachedRepoRequestDriven:
     when the data is requested and cache is older than 'max_data_age_seconds'
     """
 
-    TIMESTAMP_NEVER_UPDATED = datetime(1970, 1, 1).replace(tzinfo=timezone.utc)
+    TIMESTAMP_NEVER_UPDATED = datetime(year=1970, month=1, day=1, tzinfo=timezone.utc)
 
     def __init__(
         self,

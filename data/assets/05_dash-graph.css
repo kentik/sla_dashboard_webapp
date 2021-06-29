@@ -3,7 +3,14 @@
 
 /* Connection matrix */
 .chart__default {
-  display: flex;
-  align-content: center;
-  justify-content: center;
+  	align-content: center;
+  	justify-content: center
+    width: 70vw;
+	height: 70vh;
+}
+.chart_container {
+	height: 70vh;
+}
+#matrix.dash-graph {
+	height: 70vh;
 }
