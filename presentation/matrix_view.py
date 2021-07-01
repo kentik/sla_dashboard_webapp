@@ -166,6 +166,7 @@ class MatrixView:
             opacity=1,
             name="",
             showscale=False,
+            autosize=True,
             colorscale=self.make_color_scale(),
             autosize=True,
         )
