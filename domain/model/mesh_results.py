@@ -43,7 +43,7 @@ class Agents:
 
 @dataclass
 class Metric:
-    """ Represents single from->to connection metric """
+    """Represents single from->to connection metric"""
 
     health: str = ""  # "healthy", "warning", ...
     value: MetricValue = MetricValue()
@@ -51,7 +51,7 @@ class Metric:
 
 @dataclass
 class HealthItem:
-    """ Represents single from->to connection health timeseries entry """
+    """Represents single from->to connection health timeseries entry"""
 
     jitter_millisec: MetricValue
     latency_millisec: MetricValue
@@ -61,7 +61,7 @@ class HealthItem:
 
 @dataclass
 class MeshColumn:
-    """ Represents connection "to" endpoint """
+    """Represents connection "to" endpoint"""
 
     agent_id: AgentID = AgentID()
     jitter_millisec: Metric = Metric()
@@ -74,7 +74,8 @@ class MeshColumn:
 
 
 class MeshRow:
-    """ Represents connection "from" endpoint """
+    """Represents connection "from" endpoint"""
+
     def __init__(self, agent_id: AgentID, columns: List[MeshColumn]):
         self.agent_id = agent_id
         self.columns = sorted(columns, key=lambda x: x.agent_id)
