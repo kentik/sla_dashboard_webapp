@@ -69,6 +69,9 @@ class MeshColumn:
     packet_loss_percent: Metric = Metric()
     health: List[HealthItem] = field(default_factory=list)
 
+    def is_no_data(self) -> bool:
+        return self.packet_loss_percent.value == MetricValue(100) or self.health == []
+
 
 @dataclass
 class MeshRow:

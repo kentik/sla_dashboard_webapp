@@ -12,7 +12,6 @@ from dash.dependencies import Input, Output
 
 from domain.cached_repo_request_driven import CachedRepoRequestDriven
 from domain.metric_type import MetricType
-from domain.model import MeshResults
 from domain.types import AgentID
 from infrastructure.config import ConfigYAML
 from infrastructure.data_access.http.synthetics_repo import SyntheticsRepo

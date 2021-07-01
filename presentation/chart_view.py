@@ -1,10 +1,12 @@
 import urllib.parse as urlparse
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from urllib.parse import parse_qs
 
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
+from dash_html_components.Br import Br
+from dash_html_components.Div import Div
 
 from domain.config import Config
 from domain.geo import calc_distance
@@ -19,30 +21,53 @@ class ChartView:
 
     def make_layout(self, from_agent, to_agent: AgentID, mesh: MeshResults) -> html.Div:
         title = self.make_title(from_agent, to_agent, mesh)
-        fig_latency = self.make_figure(from_agent, to_agent, MetricType.LATENCY, mesh)
-        fig_jitter = self.make_figure(from_agent, to_agent, MetricType.JITTER, mesh)
-        fig_packetloss = self.make_figure(from_agent, to_agent, MetricType.PACKET_LOSS, mesh, (0, 100))
-        style = {"width": "100%", "height": "20vh", "display": "inline-block", "margin-bottom": "20px"}
+        conn = mesh.connection(from_agent, to_agent)
+
+        if conn.is_no_data():
+            content = self.make_no_data_content()
+        else:
+            content = self.make_charts_content(from_agent, to_agent, mesh)
+
+        content.append(
+            html.Div(
+                html.Center(
+                    dcc.Link("Back to matrix view", href="/"),
+                    style={"font-size": "large"},
+                ),
+                className="button",
+            )
+        )
+
         return html.Div(
             children=[
                 html.H1(children=title, className="header_main"),
                 html.Div(
-                    children=[
-                        html.H3(children=MetricType.LATENCY.value, className="chart_title"),
-                        dcc.Graph(id="timeseries_latency_chart", style=style, figure=fig_latency),
-                        html.H3(children=MetricType.JITTER.value, className="chart_title"),
-                        dcc.Graph(id="timeseries_jitter_chart", style=style, figure=fig_jitter),
-                        html.H3(children=MetricType.PACKET_LOSS.value, className="chart_title"),
-                        dcc.Graph(id="timeseries_packetloss_chart", style=style, figure=fig_packetloss),
-                        html.Div(
-                            html.Center(dcc.Link("Back to matrix view", href="/"), style={"font-size": "large"}),
-                            className="button",
-                        ),
-                    ],
+                    children=content,
                     className="main_container",
                 ),
             ],
         )
+
+    def make_no_data_content(self) -> List:
+        return [
+            html.H1("NO DATA"),
+            html.Br(),
+            html.Br(),
+        ]
+
+    def make_charts_content(self, from_agent, to_agent: AgentID, mesh: MeshResults) -> List:
+        fig_latency = self.make_figure(from_agent, to_agent, MetricType.LATENCY, mesh)
+        fig_jitter = self.make_figure(from_agent, to_agent, MetricType.JITTER, mesh)
+        fig_packetloss = self.make_figure(from_agent, to_agent, MetricType.PACKET_LOSS, mesh, (0, 100))
+        style = {"width": "100%", "height": "20vh", "display": "inline-block", "margin-bottom": "20px"}
+        return [
+            html.H3(children=MetricType.LATENCY.value, className="chart_title"),
+            dcc.Graph(id="timeseries_latency_chart", style=style, figure=fig_latency),
+            html.H3(children=MetricType.JITTER.value, className="chart_title"),
+            dcc.Graph(id="timeseries_jitter_chart", style=style, figure=fig_jitter),
+            html.H3(children=MetricType.PACKET_LOSS.value, className="chart_title"),
+            dcc.Graph(id="timeseries_packetloss_chart", style=style, figure=fig_packetloss),
+        ]
 
     def make_title(self, from_agent, to_agent: AgentID, mesh: MeshResults) -> str:
         from_alias = mesh.agents.get_alias(from_agent)

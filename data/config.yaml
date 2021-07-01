@@ -16,9 +16,10 @@ logging_level: INFO
 
 # matrix look
 matrix:
-  cell_color_healthy: "rgb(0,255,0)"   # green
-  cell_color_warning: "rgb(255,165,0)" # orange
-  cell_color_critical: "rgb(255,0,0)"  # red
+  cell_color_healthy: "rgb(0,255,0)"      # green
+  cell_color_warning: "rgb(255,165,0)"    # orange
+  cell_color_critical: "rgb(255,0,0)"     # red
+  cell_color_nodata: "rgb(192, 192, 192)" # light grey
 
 # distance unit between agents. Possible values are: [miles, kilometers]
 distance_unit: "miles"

@@ -69,6 +69,7 @@ class ConfigYAML:
                 config["matrix"]["cell_color_healthy"],
                 config["matrix"]["cell_color_warning"],
                 config["matrix"]["cell_color_critical"],
+                config["matrix"]["cell_color_nodata"],
             )
             self._distance_unit = DistanceUnit(config["distance_unit"])
         except Exception as err:
