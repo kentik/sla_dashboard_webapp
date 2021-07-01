@@ -20,9 +20,9 @@ class Agents:
     def __init__(self) -> None:
         self._agents: Dict[AgentID, Agent] = {}
 
-    def get_by_id(self, id: AgentID) -> Agent:
-        if id in self._agents:
-            return self._agents[id]
+    def get_by_id(self, agent_id: AgentID) -> Agent:
+        if agent_id in self._agents:
+            return self._agents[agent_id]
         return Agent()
 
     def get_by_alias(self, alias: str) -> Agent:
@@ -31,10 +31,10 @@ class Agents:
                 return v
         return Agent()
 
-    def get_alias(self, id: AgentID) -> str:
-        agent = self.get_by_id(id)
+    def get_alias(self, agent_id: AgentID) -> str:
+        agent = self.get_by_id(agent_id)
         if agent.id == AgentID():
-            return f"[agent_id={id} not found]"
+            return f"[agent_id={agent_id} not found]"
         return agent.alias
 
     def insert(self, agent: Agent) -> None:
@@ -73,12 +73,11 @@ class MeshColumn:
         return self.packet_loss_percent.value == MetricValue(100) or self.health == []
 
 
-@dataclass
 class MeshRow:
     """ Represents connection "from" endpoint """
-
-    agent_id: AgentID
-    columns: List[MeshColumn]
+    def __init__(self, agent_id: AgentID, columns: List[MeshColumn]):
+        self.agent_id = agent_id
+        self.columns = sorted(columns, key=lambda x: x.agent_id)
 
 
 class ConnectionMatrix:
@@ -105,21 +104,27 @@ class ConnectionMatrix:
 
 
 class MeshResults:
-    """Internal representation of Mesh Test results; independent of source data structure like http or grpc synthetics client"""
+    """
+    Internal representation of Mesh Test results; independent of source data structure like http
+    or grpc synthetics client
+    """
 
     def __init__(
         self,
-        utc_timestamp: Optional[datetime] = None,
-        rows: List[MeshRow] = [],
+        utc_timestamp: datetime,
+        rows: Optional[List[MeshRow]] = None,
         agents: Agents = Agents(),
     ) -> None:
         if utc_timestamp is None:
             utc_timestamp = datetime.now(timezone.utc)
 
         self.utc_timestamp = utc_timestamp
-        self.rows = rows
+        if rows is not None:
+            self.rows = sorted(rows, key=lambda x: x.agent_id)
+        else:
+            self.rows = []
         self.agents = agents
-        self._connection_matrix = ConnectionMatrix(rows)
+        self._connection_matrix = ConnectionMatrix(self.rows)
 
     def filter(self, from_agent, to_agent: AgentID, metric: MetricType) -> List[Tuple[datetime, MetricValue]]:
         items = self.connection(from_agent, to_agent).health

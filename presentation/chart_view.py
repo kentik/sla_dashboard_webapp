@@ -88,7 +88,9 @@ class ChartView:
     ):
         filtered = mesh.filter(from_agent, to_agent, metric)
         xdata, ydata = zip(*filtered) if filtered else ((), ())
-        layout = go.Layout(margin={"t": 0, "b": 0})  # remove empty space above and below the chart
+        layout = go.Layout(
+            margin={"t": 0, "b": 0},   # remove empty space above and below the chart
+            modebar={"orientation": "v"})
         fig = go.Figure(
             data=[go.Scatter(x=xdata, y=ydata)],
             layout=layout,

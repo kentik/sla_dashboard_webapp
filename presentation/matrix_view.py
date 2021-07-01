@@ -20,6 +20,7 @@ from domain.types import AgentID, MetricValue, Threshold
 # We make sure to always have values in range [0.0 - 1.0] in our matrix,
 # so that no range stretching occurs and coloring works as expected.
 
+
 # SLALevel maps connection state to a value in connection matrix, in range [0.0 - 1.0]
 class SLALevel(float, Enum):
     _MIN = 0.0
@@ -152,12 +153,12 @@ class MatrixView:
         return {"data": [data], "layout": layout}
 
     def make_figure_data(self, mesh: MeshResults, metric: MetricType) -> Dict:
-        labels = [mesh.agents.get_by_id(row.agent_id).alias for row in mesh.rows]
-        reversed_labels = list(reversed(labels))
+        x_labels = [mesh.agents.get_by_id(row.agent_id).alias for row in mesh.rows]
+        y_labels = list(reversed(x_labels))
         sla_levels = self.make_sla_levels(mesh, metric)
         return dict(
-            x=labels,
-            y=reversed_labels,
+            x=x_labels,
+            y=y_labels,
             z=sla_levels,
             text=self.make_hover_text(mesh),
             type="heatmap",
