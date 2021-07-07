@@ -17,6 +17,7 @@ WORKDIR /app
 COPY domain domain
 COPY infrastructure infrastructure
 COPY presentation presentation
+COPY routing.py routing.py
 COPY generated generated
 COPY main.py .
 COPY requirements.txt .
