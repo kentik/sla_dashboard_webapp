@@ -168,7 +168,6 @@ class MatrixView:
             showscale=False,
             autosize=True,
             colorscale=self.make_color_scale(),
-            autosize=True,
         )
 
     def make_sla_levels(self, mesh: MeshResults, metric: MetricType) -> List[SLALevelColumn]:

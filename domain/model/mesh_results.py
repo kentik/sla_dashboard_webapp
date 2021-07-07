@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
 from domain.geo import Coordinates
@@ -116,9 +116,6 @@ class MeshResults:
         rows: Optional[List[MeshRow]] = None,
         agents: Agents = Agents(),
     ) -> None:
-        if utc_timestamp is None:
-            utc_timestamp = datetime.now(timezone.utc)
-
         self.utc_timestamp = utc_timestamp
         if rows is not None:
             self.rows = sorted(rows, key=lambda x: x.agent_id)
