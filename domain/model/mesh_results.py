@@ -51,7 +51,7 @@ class Metric:
 
 @dataclass
 class HealthItem:
-    """Represents single from->to connection health timeseries entry"""
+    """Represents single from->to connection health time-series entry"""
 
     jitter_millisec: MetricValue
     latency_millisec: MetricValue

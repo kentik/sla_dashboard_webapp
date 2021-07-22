@@ -33,37 +33,32 @@ class SyntheticsRepo:
 
     def get_mesh_test_results(self, test_id: TestID, results_lookback_seconds: int) -> MeshResults:
         try:
-            end = datetime.now(timezone.utc)
-            start = end - timedelta(seconds=results_lookback_seconds)
-
-            request = V202101beta1GetHealthForTestsRequest(ids=[test_id], start_time=start, end_time=end, augment=True)
-            response = self._api_client.synthetics.get_health_for_tests(request, _request_timeout=self._timeout)
-
-            if len(response.health) == 0:
-                raise Exception("get_health_for_tests returned 0 items")
-
-            most_recent_result = response.health[-1]
-            rows = transform_to_internal_mesh_rows(most_recent_result)
-            agents = transform_to_internal_agents(most_recent_result)
-            return MeshResults(datetime.now(timezone.utc), rows, agents)
-        except ApiException as err:
-            raise Exception(f"Failed to fetch results for test id: {test_id}") from err
-
-
-def transform_to_internal_agents(data: V202101beta1TestHealth) -> Agents:
-    agents = Agents()
-    for task in data.tasks:
-        for agentHealth in task.agents:
-            input_agent = agentHealth.agent
-            agent = Agent(
-                id=AgentID(input_agent.id),
-                ip=input_agent.ip,
-                name=input_agent.name,
-                alias=input_agent.alias,
-                coords=Coordinates(input_agent.long, input_agent.lat),
+            return MeshResults(
+                utc_timestamp=datetime.now(timezone.utc),
+                rows=self._get_mesh_test_rows(test_id, results_lookback_seconds),
+                agents=self._get_agents(test_id),
             )
-            agents.insert(agent)
-    return agents
+        except ApiException as err:
+            raise Exception(f"Failed to fetch results for test ID: {test_id}") from err
+
+    def _get_mesh_test_rows(self, test_id: TestID, results_lookback_seconds: int) -> List[MeshRow]:
+        end = datetime.now(timezone.utc)
+        start = end - timedelta(seconds=results_lookback_seconds)
+        request = V202101beta1GetHealthForTestsRequest(ids=[test_id], start_time=start, end_time=end, augment=True)
+
+        response = self._api_client.synthetics_data_service.get_health_for_tests(
+            request, _request_timeout=self._timeout
+        )
+        if len(response.health) == 0:
+            raise Exception("get_health_for_tests returned 0 items")
+
+        most_recent_result = response.health[-1]
+        return transform_to_internal_mesh_rows(most_recent_result)
+
+    def _get_agents(self, test_id) -> Agents:
+        test_resp = self._api_client.synthetics_admin_service.test_get(test_id)
+        agents_resp = self._api_client.synthetics_admin_service.agents_list()
+        return make_internal_agents(agents_resp.agents, test_resp.test.settings.agent_ids)
 
 
 def transform_to_internal_mesh_rows(data: V202101beta1TestHealth) -> List[MeshRow]:
@@ -115,3 +110,19 @@ def scale_us_to_ms(val: str) -> MetricValue:
 def scale_to_percents(val: str) -> MetricValue:
     # scale 0..1 -> 0..100
     return MetricValue(float(val) * 100.0)
+
+
+def make_internal_agents(agents, agent_ids) -> Agents:
+    result = Agents()
+    for agent in agents:
+        if agent.id in agent_ids:
+            result.insert(
+                Agent(
+                    id=AgentID(agent.id),
+                    ip=agent.ip,
+                    name=agent.name,
+                    alias=agent.alias,
+                    coords=Coordinates(agent.long, agent.lat),
+                )
+            )
+    return result

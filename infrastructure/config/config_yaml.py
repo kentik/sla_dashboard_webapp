@@ -10,7 +10,7 @@ from infrastructure.config.thresholds import Thresholds
 
 
 class ConfigYAML:
-    """ ConfigYAML implements domain.config.config.Config protocol """
+    """ConfigYAML implements domain.config.config.Config protocol"""
 
     @property
     def test_id(self) -> TestID:

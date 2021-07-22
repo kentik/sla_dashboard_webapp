@@ -6,7 +6,7 @@ from domain.types import AgentID, Threshold
 
 @dataclass
 class ThresholdOverride:
-    """ Threshold overrides can be optionally specified; if not specified - default values shall be used """
+    """Threshold overrides can be optionally specified; if not specified - default values shall be used"""
 
     warning: Optional[Threshold] = None
     critical: Optional[Threshold] = None

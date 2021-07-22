@@ -14,7 +14,6 @@ import routing
 
 from domain.cached_repo_request_driven import CachedRepoRequestDriven
 from domain.metric_type import MetricType
-from domain.types import AgentID
 from infrastructure.config import ConfigYAML
 from infrastructure.data_access.http.synthetics_repo import SyntheticsRepo
 from presentation.chart_view import ChartView
@@ -33,13 +32,13 @@ class WebApp:
             config = ConfigYAML("data/config.yaml")
             self._config = config
             email, token = get_auth_email_token()
-            apiserver_url = os.getenv("KTAPI_URL")
+            api_server_url = os.getenv("KTAPI_URL")
 
             # logging
             logging.basicConfig(level=config.logging_level, format=FORMAT)
 
             # data access
-            repo = SyntheticsRepo(email, token, apiserver_url, config.timeout)
+            repo = SyntheticsRepo(email, token, api_server_url, config.timeout)
             self._cached_repo = CachedRepoRequestDriven(
                 repo, config.test_id, config.data_update_period_seconds, config.data_update_lookback_seconds
             )
@@ -74,7 +73,7 @@ class WebApp:
                     path_args = pathname.split("?", maxsplit=1)
                     make_layout = self._routes.get(path_args[0], lambda _: HTTPErrorView.make_layout(404))
                     return make_layout(pathname)
-                except Exception as err:
+                except Exception:
                     logger.exception("Error while rendering page")
                     return HTTPErrorView.make_layout(500)
 
@@ -87,15 +86,15 @@ class WebApp:
 
             # matrix view - handle cell click
             @app.callback(Output(IndexView.MATRIX_REDIRECT, "children"), Input(MatrixView.MATRIX, "clickData"))
-            def open_chart(clickData: Optional[Dict[str, Any]]):
-                from_agent, to_agent = self._matrix_view.get_agents_from_click(clickData)
+            def open_chart(click_data: Optional[Dict[str, Any]]):
+                from_agent, to_agent = self._matrix_view.get_agents_from_click(click_data)
                 if from_agent is None or to_agent is None or from_agent == to_agent:
                     return None
 
                 path = quote(routing.encode_chart_path(from_agent, to_agent))
                 return dcc.Location(id=IndexView.URL, pathname=path, refresh=True)
 
-        except Exception as err:
+        except Exception:
             logger.exception("WebApp initialization failure")
             sys.exit(1)
 
@@ -107,8 +106,8 @@ class WebApp:
 
     def _make_matrix_layout(self, path: str) -> html.Div:
         metric = routing.decode_matrix_path(path)
-        mesh_test_results = self._cached_repo.get_mesh_test_results()
-        return self._matrix_view.make_layout(mesh_test_results, metric, self._config)
+        results = self._cached_repo.get_mesh_test_results()
+        return self._matrix_view.make_layout(results, metric, self._config)
 
     def _make_chart_layout(self, path: str) -> html.Div:
         from_agent, to_agent = routing.decode_chart_path(path)

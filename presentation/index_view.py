@@ -3,7 +3,7 @@ import dash_html_components as html
 
 
 class IndexView:
-    """ Represents the main page template; header, footer, content place holder """
+    """Represents the main page template; header, footer, content place holder"""
 
     URL = "url"
     PAGE_CONTENT = "page-content"
