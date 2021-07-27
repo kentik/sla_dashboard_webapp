@@ -11,14 +11,14 @@ function checkIfServerDataIsStale() {
     if (domDateTimeElement) {
         const serverData = getDataTimestamp(domDateTimeElement);
         const dateNow = new Date();
-        const dataAgeSeconds = (dateNow.getTime() - serverData.getTime()) / 1000; 
+        const dataAgeSeconds = (dateNow.getTime() - serverData.getTime()) / 1000;
         const allowedDataAgeSeconds = domDiffWarningElement.innerText;
         const warningElement = document.getElementsByClassName('header-stale-data-warning');
         if(warningElement[0]) {
             if(dataAgeSeconds > parseInt(allowedDataAgeSeconds)) {
                 warningElement[0].className = 'header-stale-data-warning header-stale-data-warning-visible';
-            } else{
-               warningElement[0].className = 'header-stale-data-warning';
+            } else {
+                warningElement[0].className = 'header-stale-data-warning';
             }
         }
     }

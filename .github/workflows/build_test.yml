@@ -38,7 +38,7 @@ jobs:
             sla_dashboard:latest
 
       - name: Warm-up time
-        run: sleep 5 
+        run: sleep 5
 
       - name: Inspect webapp
         run: docker logs sla_dashboard
@@ -53,7 +53,7 @@ jobs:
         run: curl --fail --include 127.0.0.1:8050/chart?from=646&to=733
 
       - name: Stop webapp
-        run: docker stop sla_dashboard 
+        run: docker stop sla_dashboard
 
       - name: Stop local apiserver
         run: curl 127.0.0.1:9050/shutdown

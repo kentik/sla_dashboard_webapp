@@ -2,7 +2,6 @@
 
 # Generate Python client SDK from OpenAPI 3.0.0 spec
 
-
 function run() {
     check_prerequisites
 
@@ -16,7 +15,6 @@ function run() {
     change_ownership_to_current_user "generated"
 }
 
-
 function stage() {
     BOLD_BLUE="\e[1m\e[34m"
     RESET="\e[0m"
@@ -29,7 +27,7 @@ function stage() {
 function check_prerequisites() {
     stage "Checking prerequisites"
 
-    if ! docker --version > /dev/null 2>&1; then
+    if ! docker --version >/dev/null 2>&1; then
         echo "You need to install docker to run the generator"
         exit 1
     fi
@@ -44,8 +42,8 @@ function generate_golang_client_from_openapi3_spec() {
     package="$2"
     output_dir="$3"
 
-    docker run --rm  -v "$(pwd):/local" \
-        openapitools/openapi-generator-cli generate  \
+    docker run --rm -v "$(pwd):/local" \
+        openapitools/openapi-generator-cli generate \
         -i "/local/$spec_file" \
         -g python \
         --package-name "$package" \

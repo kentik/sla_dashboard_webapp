@@ -1,0 +1,32 @@
+# See: http://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+trim_trailing_whitespace = true
+
+[*.css]
+indent_size = 2
+
+[{*.go, *.mod}]
+indent_style = tab
+
+[*.html]
+indent_size = 2
+
+[{Makefile, GNUmakefile}]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false
+
+[{*.yml,*.yaml}]
+indent_size = 2
+
+# Excluded files
+[LICENSE]
+indent_size = unset
