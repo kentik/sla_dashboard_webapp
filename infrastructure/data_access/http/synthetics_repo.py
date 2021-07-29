@@ -1,3 +1,5 @@
+import logging
+import threading
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
@@ -18,6 +20,8 @@ from generated.synthetics_http_client.synthetics.model.v202101beta1_test_health 
 # pylint: enable=E0611
 from infrastructure.data_access.http.api_client import KentikAPI
 
+logger = logging.getLogger(__name__)
+
 
 class SyntheticsRepo:
     """SyntheticsRepo implements domain.Repo protocol"""
@@ -30,6 +34,8 @@ class SyntheticsRepo:
         else:
             self._api_client = KentikAPI(email=email, token=token)
         self._timeout = timeout
+        self._cached_agents = Agents()
+        self._cached_agents_lock = threading.Lock()
 
     def get_mesh_test_results(self, test_id: TestID, results_lookback_seconds: int) -> MeshResults:
         try:
@@ -56,9 +62,35 @@ class SyntheticsRepo:
         return transform_to_internal_mesh_rows(most_recent_result)
 
     def _get_agents(self, test_id) -> Agents:
+        agent_ids = self._get_agent_ids(test_id)
+
+        with self._cached_agents_lock:
+            self._update_agents_cache_if_needed(agent_ids)
+            return self._cached_agents.filter(agent_ids)
+
+    def _get_agent_ids(self, test_id):
+        logger.debug(f"Getting agent IDs for test with ID {test_id}")
         test_resp = self._api_client.synthetics_admin_service.test_get(test_id)
+        agent_ids = test_resp.test.settings.agent_ids
+        logger.debug(f"Got agent IDs for test with ID {test_id}: {agent_ids}")
+        return agent_ids
+
+    def _update_agents_cache_if_needed(self, agent_ids):
+        if self._is_cached_agents_update_necessary(agent_ids):
+            self._update_agents_cache()
+
+    def _is_cached_agents_update_necessary(self, agent_ids: List[AgentID]) -> bool:
+        cached_agent_ids = self._cached_agents.list_agent_ids()
+        for agent_id in agent_ids:
+            if agent_id not in cached_agent_ids:
+                return True
+        return False
+
+    def _update_agents_cache(self) -> None:
+        logger.debug("Updating agents cache")
         agents_resp = self._api_client.synthetics_admin_service.agents_list()
-        return make_internal_agents(agents_resp.agents, test_resp.test.settings.agent_ids)
+        self._cached_agents = transform_to_internal_agents(agents_resp.agents)
+        logger.debug("Finished updating agents cache")
 
 
 def transform_to_internal_mesh_rows(data: V202101beta1TestHealth) -> List[MeshRow]:
@@ -112,17 +144,16 @@ def scale_to_percents(val: str) -> MetricValue:
     return MetricValue(float(val) * 100.0)
 
 
-def make_internal_agents(agents, agent_ids) -> Agents:
+def transform_to_internal_agents(agents) -> Agents:
     result = Agents()
     for agent in agents:
-        if agent.id in agent_ids:
-            result.insert(
-                Agent(
-                    id=AgentID(agent.id),
-                    ip=agent.ip,
-                    name=agent.name,
-                    alias=agent.alias,
-                    coords=Coordinates(agent.long, agent.lat),
-                )
+        result.insert(
+            Agent(
+                id=AgentID(agent.id),
+                ip=agent.ip,
+                name=agent.name,
+                alias=agent.alias,
+                coords=Coordinates(agent.long, agent.lat),
             )
+        )
     return result

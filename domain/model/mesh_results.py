@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
@@ -20,6 +21,9 @@ class Agents:
     def __init__(self) -> None:
         self._agents: Dict[AgentID, Agent] = {}
 
+    def insert(self, agent: Agent) -> None:
+        self._agents[agent.id] = agent
+
     def get_by_id(self, agent_id: AgentID) -> Agent:
         if agent_id in self._agents:
             return self._agents[agent_id]
@@ -37,8 +41,14 @@ class Agents:
             return f"[agent_id={agent_id} not found]"
         return agent.alias
 
-    def insert(self, agent: Agent) -> None:
-        self._agents[agent.id] = agent
+    def list_agent_ids(self) -> List[AgentID]:
+        return list(self._agents)
+
+    def filter(self, agent_ids: List[AgentID]):
+        result = Agents()
+        for agent_id in agent_ids:
+            result.insert(deepcopy(self.get_by_id(agent_id)))
+        return result
 
 
 @dataclass
