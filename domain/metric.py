@@ -7,6 +7,14 @@ MetricValue = float
 """ latency and jitter in milliseconds, packet_loss in percent (0-100) """
 
 
+class MetricUnit(Enum):
+    """Measurement units for mesh test metrics"""
+
+    LATENCY = "ms"
+    JITTER = "ms"
+    PACKET_LOSS = "%"
+
+
 class MetricType(Enum):
     """Available mesh test metric types"""
 
@@ -14,21 +22,18 @@ class MetricType(Enum):
     JITTER = "Jitter"
     PACKET_LOSS = "Packet loss"
 
+    @property
+    def unit(self) -> str:
+        return MetricUnit.__getattr__(self.name).value  # type: ignore
+
 
 @dataclass
 class Metric:
+    """Representation of single test metric"""
+
     type: MetricType
     value: MetricValue
-    unit: str
 
-    @classmethod
-    def latency(cls, value: MetricValue, unit: str = "ms") -> Metric:
-        return cls(MetricType.LATENCY, value, unit)
-
-    @classmethod
-    def jitter(cls, value: MetricValue, unit: str = "ms") -> Metric:
-        return cls(MetricType.JITTER, value, unit)
-
-    @classmethod
-    def loss(cls, value: MetricValue, unit: str = "%") -> Metric:
-        return cls(MetricType.PACKET_LOSS, value, unit)
+    @property
+    def unit(self) -> str:
+        return self.type.unit

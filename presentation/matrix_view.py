@@ -80,7 +80,7 @@ class MatrixView:
                                 html.Label("Select primary metric:", className="select_label"),
                                 dcc.Dropdown(
                                     id=self.METRIC_SELECTOR,
-                                    options=[{"label": f"{m.value}", "value": m.value} for m in MetricType],
+                                    options=[{"label": f"{m.value} [{m.unit}]", "value": m.value} for m in MetricType],
                                     value=metric.value,
                                     clearable=False,
                                     className="dropdowns",

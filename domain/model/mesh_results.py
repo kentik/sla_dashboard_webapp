@@ -52,16 +52,24 @@ class Agents:
 class HealthItem:
     """Represents single from->to connection health time-series entry"""
 
-    def __init__(self, jitter_millisec, latency_millisec, packet_loss_percent: MetricValue, time: datetime) -> None:
+    def __init__(
+        self,
+        jitter_millisec: MetricValue,
+        latency_millisec: MetricValue,
+        packet_loss_percent: MetricValue,
+        time: datetime,
+    ) -> None:
         self.timestamp = time
-        self.packet_loss_percent = Metric.loss(packet_loss_percent)
+        self.packet_loss_percent = Metric(type=MetricType.PACKET_LOSS, value=packet_loss_percent)
 
         # if packet loss is 100%, then jitter and latency measurements do not apply
-        self.jitter_millisec = Metric.jitter(
-            jitter_millisec if packet_loss_percent < MetricValue(100) else MetricValue("nan")
+        self.jitter_millisec = Metric(
+            type=MetricType.JITTER,
+            value=jitter_millisec if packet_loss_percent < MetricValue(100) else MetricValue("nan"),
         )
-        self.latency_millisec = Metric.latency(
-            latency_millisec if packet_loss_percent < MetricValue(100) else MetricValue("nan")
+        self.latency_millisec = Metric(
+            type=MetricType.LATENCY,
+            value=latency_millisec if packet_loss_percent < MetricValue(100) else MetricValue("nan"),
         )
 
     def get_metric(self, type: MetricType) -> Metric:
