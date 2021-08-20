@@ -31,7 +31,8 @@ class ChartView:
             ]
         )
 
-    def make_no_data_content(self) -> List:
+    @staticmethod
+    def make_no_data_content() -> List:
         return [html.H1("NO DATA"), html.Br(), html.Br()]
 
     def make_charts_content(self, from_agent, to_agent: AgentID, mesh: MeshResults) -> List:
@@ -48,14 +49,15 @@ class ChartView:
             dcc.Graph(id="timeseries_packetloss_chart", style=style, figure=fig_packetloss),
         ]
 
-    def make_title(self, from_agent, to_agent: AgentID, mesh: MeshResults) -> str:
-        from_alias = mesh.agents.get_alias(from_agent)
-        to_alias = mesh.agents.get_alias(to_agent)
-        from_coords = mesh.agents.get_by_id(from_agent).coords
-        to_coords = mesh.agents.get_by_id(to_agent).coords
+    def make_title(self, from_agent_id: AgentID, to_agent_id: AgentID, mesh: MeshResults) -> str:
+        from_agent = mesh.agents.get_by_id(from_agent_id)
+        to_agent = mesh.agents.get_by_id(to_agent_id)
         distance_unit = self._config.distance_unit
-        distance = calc_distance(from_coords, to_coords, distance_unit)
-        return f"{from_alias} -> {to_alias} ({distance:.0f} {distance_unit.value})"
+        distance = calc_distance(from_agent.coords, to_agent.coords, distance_unit)
+        return (
+            f"{from_agent.name}, {from_agent.alias} [{from_agent.id}] -> "
+            f"{to_agent.name}, {to_agent.alias} [{to_agent.id}] ({distance:.0f} {distance_unit.value})"
+        )
 
     @staticmethod
     def make_figure(

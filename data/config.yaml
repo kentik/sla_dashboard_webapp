@@ -12,7 +12,7 @@ data_update_lookback_seconds: 3600
 timeout: [30.0, 30.0]
 
 # sets the logging level. Possible values are: [CRITICAL, ERROR, WARNING, INFO, DEBUG]
-logging_level: INFO
+logging_level: DEBUG
 
 # matrix look
 matrix:

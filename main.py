@@ -107,7 +107,7 @@ class WebApp:
     def _make_matrix_layout(self, path: str) -> html.Div:
         metric = routing.decode_matrix_path(path)
         results = self._cached_repo.get_mesh_test_results()
-        return self._matrix_view.make_layout(results, metric, self._config)
+        return self._matrix_view.make_layout(results, metric)
 
     def _make_chart_layout(self, path: str) -> html.Div:
         from_agent, to_agent = routing.decode_chart_path(path)
