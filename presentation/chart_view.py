@@ -15,7 +15,7 @@ class ChartView:
     def __init__(self, config: Config) -> None:
         self._config = config
 
-    def make_layout(self, from_agent, to_agent: AgentID, mesh: MeshResults) -> html.Div:
+    def make_layout(self, from_agent: AgentID, to_agent: AgentID, mesh: MeshResults) -> html.Div:
         title = self.make_title(from_agent, to_agent, mesh)
         conn = mesh.connection(from_agent, to_agent)
 
@@ -35,7 +35,7 @@ class ChartView:
     def make_no_data_content() -> List:
         return [html.H1("NO DATA"), html.Br(), html.Br()]
 
-    def make_charts_content(self, from_agent, to_agent: AgentID, mesh: MeshResults) -> List:
+    def make_charts_content(self, from_agent: AgentID, to_agent: AgentID, mesh: MeshResults) -> List:
         fig_latency = self.make_figure(from_agent, to_agent, MetricType.LATENCY, mesh)
         fig_jitter = self.make_figure(from_agent, to_agent, MetricType.JITTER, mesh)
         fig_packetloss = self.make_figure(from_agent, to_agent, MetricType.PACKET_LOSS, mesh, (0, 100))

@@ -54,13 +54,13 @@ class SyntheticsRepo:
             request, _request_timeout=self._timeout
         )
 
-        # response.health can be an empty list if no measurements were recorded in requested period of time
-        # for example: right after mesh test was started, after mesh test was paused
+        # The response.health list can be empty if no measurements were recorded in the requested time period,
+        # for example, right after mesh test is started, or when it is paused
         if len(response.health) == 0:
             return []
-
-        most_recent_result = response.health[-1]
-        return transform_to_internal_mesh_rows(most_recent_result)
+        # The response.health list contains one entry for each unique test ID passed in the 'ids' list in the request.
+        # We always request results for only one test, so using the first and only item is safe.
+        return transform_to_internal_mesh_rows(response.health[0])
 
     def _get_agents(self, test_id) -> Agents:
         test_resp = self._api_client.synthetics_admin_service.test_get(test_id)
@@ -70,8 +70,11 @@ class SyntheticsRepo:
 
 def transform_to_internal_mesh_rows(data: V202101beta1TestHealth) -> List[MeshRow]:
     rows: List[MeshRow] = []
-    for input_row in data.mesh:
-        row = MeshRow(agent_id=AgentID(input_row.id), columns=transform_to_internal_mesh_columns(input_row.columns))
+    for r in data.mesh:
+        row = MeshRow(
+            agent=Agent(id=AgentID(r.id), name=r.name, alias=r.alias),
+            columns=transform_to_internal_mesh_columns(r.columns),
+        )
         rows.append(row)
     return rows
 

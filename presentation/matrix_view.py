@@ -38,11 +38,7 @@ SLALevelColumn = List[Optional[SLALevel]]
 
 
 def agent_label(agent: Agent) -> str:
-    return f"{agent.alias} [{agent.id}]"
-
-
-def agent_id_from_label(label: str) -> AgentID:
-    return AgentID(label.split("[")[1].split("]")[0])
+    return agent.name
 
 
 class MatrixView:
@@ -163,7 +159,7 @@ class MatrixView:
         return {"data": [data], "layout": layout}
 
     def make_figure_data(self, mesh: MeshResults, metric: MetricType) -> Dict:
-        x_labels = [agent_label(mesh.agents.get_by_id(agent_id)) for agent_id in mesh.agents.sorted_ids]
+        x_labels = [agent_label(agent) for agent in mesh.agents.all()]
         y_labels = list(reversed(x_labels))
         sla_levels = self.make_sla_levels(mesh, metric)
         return dict(
@@ -184,15 +180,15 @@ class MatrixView:
         thresholds = self.get_thresholds(metric_type)
         sla_levels: List[SLALevelColumn] = []
 
-        for from_id in reversed(mesh.agents.sorted_ids):
+        for from_agent in mesh.agents.all(reverse=True):
             sla_levels_col: SLALevelColumn = []
-            for i, to_id in enumerate(mesh.agents.sorted_ids):
-                if from_id == to_id:
+            for i, to_agent in enumerate(mesh.agents.all()):
+                if from_agent == to_agent:
                     sla_level = SLALevel(i % 2)
                 else:
-                    warning = thresholds.warning(from_id, to_id)
-                    critical = thresholds.critical(from_id, to_id)
-                    health = mesh.connection(from_id, to_id).latest_measurement
+                    warning = thresholds.warning(from_agent.id, to_agent.id)
+                    critical = thresholds.critical(from_agent.id, to_agent.id)
+                    health = mesh.connection(from_agent.id, to_agent.id).latest_measurement
                     if health:
                         metric = health.get_metric(metric_type)
                         sla_level = self.get_sla_level(metric.value, warning, critical)
@@ -213,11 +209,9 @@ class MatrixView:
     @classmethod
     def make_figure_annotations(cls, mesh: MeshResults, metric: MetricType) -> List[Dict]:
         annotations: List[Dict] = []
-        for from_id in reversed(mesh.agents.sorted_ids):
-            for to_id in mesh.agents.sorted_ids:
-                from_agent = mesh.agents.get_by_id(from_id)
-                to_agent = mesh.agents.get_by_id(to_id)
-                if from_id == to_id:
+        for from_agent in mesh.agents.all(reverse=True):
+            for to_agent in mesh.agents.all():
+                if from_agent == to_agent:
                     text = ""
                 else:
                     health = mesh.connection(from_agent.id, to_agent.id).latest_measurement
@@ -250,26 +244,24 @@ class MatrixView:
     def make_matrix_hover_text(self, mesh: MeshResults) -> List[List[str]]:
         # make hover text for each cell in the matrix
         matrix_hover_text: List[List[str]] = []
-        for from_id in reversed(mesh.agents.sorted_ids):
+        for from_agent in mesh.agents.all(reverse=True):
             column_hover_text: List[str] = []
-            for to_id in mesh.agents.sorted_ids:
-                column_hover_text.append(self.make_cell_hover_text(from_id, to_id, mesh))
+            for to_agent in mesh.agents.all():
+                column_hover_text.append(self.make_cell_hover_text(from_agent, to_agent, mesh))
             matrix_hover_text.append(column_hover_text)
 
         return matrix_hover_text
 
-    def make_cell_hover_text(self, from_agent_id: AgentID, to_agent_id: AgentID, mesh: MeshResults) -> str:
-        if from_agent_id == to_agent_id:
+    def make_cell_hover_text(self, from_agent: Agent, to_agent: Agent, mesh: MeshResults) -> str:
+        if from_agent == to_agent:
             return ""
-        from_agent = mesh.agents.get_by_id(from_agent_id)
-        to_agent = mesh.agents.get_by_id(to_agent_id)
         conn = mesh.connection(from_agent.id, to_agent.id)
         distance_unit = self._config.distance_unit
         distance = calc_distance(from_agent.coords, to_agent.coords, distance_unit)
 
         cell_hover_text: List[str] = [
             f"From: {from_agent.name}, {from_agent.alias} [{from_agent.id}]",
-            f"To: {to_agent.name}, {to_agent.alias} [{from_agent.id}]",
+            f"To: {to_agent.name}, {to_agent.alias} [{to_agent.id}]",
             f"Distance: {distance:.0f} {distance_unit.value}",
         ]
 
@@ -311,12 +303,19 @@ class MatrixView:
             (SLALevel._MAX, diagonal),
         ]
 
-    @staticmethod
-    def get_agents_from_click(click_data: Optional[Dict[str, Any]]) -> Tuple[Optional[AgentID], Optional[AgentID]]:
+    def get_agents_from_click(
+        self, click_data: Optional[Dict[str, Any]]
+    ) -> Tuple[Optional[AgentID], Optional[AgentID]]:
         if click_data is None:
             return None, None
 
-        to_agent_id = agent_id_from_label(click_data["points"][0]["x"])
-        from_agent_id = agent_id_from_label(click_data["points"][0]["y"])
-        logging.debug("click: from: %s to: %s", from_agent_id, to_agent_id)
-        return from_agent_id, to_agent_id
+        to_agent = self._agents.get_by_name(click_data["points"][0]["x"])
+        from_agent = self._agents.get_by_name(click_data["points"][0]["y"])
+        logging.debug(
+            "click: x: %s y: %s from: %s to: %s",
+            click_data["points"][0]["x"],
+            click_data["points"][0]["y"],
+            from_agent.id,
+            to_agent.id,
+        )
+        return from_agent.id, to_agent.id
