@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
-from domain.geo import Coordinates
 from domain.metric import Metric, MetricType, MetricValue
 from domain.model.agents import Agent, Agents
 from domain.types import IP, AgentID, TaskID
@@ -232,10 +231,9 @@ class MeshResults:
     ) -> None:
         self.tasks = tasks
         rows = rows or []
-        agents = Agents()
+        self.participating_agents = Agents()
         for r in rows:
-            agents.insert(r.agent)
-        self.participating_agents = agents
+            self.participating_agents.insert(r.agent)
         self.connection_matrix = ConnectionMatrix(rows)
 
     def incremental_update(self, src: MeshResults) -> None:
@@ -243,6 +241,7 @@ class MeshResults:
 
         self.tasks.incremental_update(src.tasks)
         self.connection_matrix.incremental_update(src.connection_matrix)
+        self.participating_agents = src.participating_agents
 
     def filter(self, from_agent, to_agent: AgentID, metric_type: MetricType) -> List[Tuple[datetime, MetricValue]]:
         items = self.connection(from_agent, to_agent).health

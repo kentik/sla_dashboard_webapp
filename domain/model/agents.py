@@ -65,8 +65,10 @@ class Agents:
         Update agent names and aliases based on row data while preserving other existing agent attributes
         NOTE: This is an ugly hack that should be removed as soon as Kentik API becomes little bit more consistent
         """
+        logger.debug("update_names_aliases: src_agents: %d", src.count)
         for src_agent in src.all():
             agent = self.get_by_id(src_agent.id)
+            logger.debug("Updating agent id: %s (old name: %s new name: %s)", agent.id, agent.name, src_agent.name)
             if agent.id == AgentID():
                 agent = src_agent
                 logging.warning("Agent %s (name: %s) was not in cache", agent.id, agent.name)

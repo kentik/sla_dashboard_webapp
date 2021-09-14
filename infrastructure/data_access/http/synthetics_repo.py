@@ -4,7 +4,7 @@ from typing import List, Optional, Tuple
 
 from domain.metric import MetricValue
 from domain.model import Agent, Agents, HealthItem, MeshColumn, MeshConfig, MeshResults, MeshRow, Task, Tasks
-from domain.model.mesh_results import Coordinates
+from domain.geo import Coordinates
 from domain.types import AgentID, TaskID, TestID
 
 # the below "disable=E0611" is needed as we don't commit the generated code into git repo and thus CI linter complains
