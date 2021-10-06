@@ -1,5 +1,5 @@
 :root {
-  --matrix-border-color: lightgray;
+  --matrix-border-color: white;
   --matrix-agent-bg-color: #eeeeee;
   --matrix-diagonal-bg-color: white;
   --matrix-data-width: 150px;
@@ -29,16 +29,16 @@
 }
 
 .td-from-agent {
-  font-weight: bold;
+  font-weight: medium;
   background-color: var(--matrix-agent-bg-color);
   border:1px solid var(--matrix-border-color);
   border-collapse: collapse;
   text-align: right;
-  padding: 0 4px 0 4px;
+  padding: 4px 4px 4px 4px;
 }
 
 .td-to-agent {
-  font-weight: bold;
+  font-weight: medium;
   background-color: var(--matrix-agent-bg-color);
   text-align: left;
   border:1px solid var(--matrix-border-color);
@@ -47,7 +47,7 @@
   max-width: var(--matrix-data-width);
   vertical-align: bottom;
   text-align: center;
-  padding: 0px 4px 4px 4px;
+  padding: 4px 4px 4px 4px;
 }
 
 .tr-connection-matrix {

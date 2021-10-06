@@ -4,8 +4,6 @@ from typing import List, Optional
 from urllib.parse import quote
 
 from dash import dcc, html
-from dash.html.Span import Span
-from dash.html.Table import Table
 
 import routing
 
@@ -62,7 +60,7 @@ class MatrixView:
     def make_layout(
         self, results: MeshResults, config: MeshConfig, data_history_seconds: int, metric: MetricType
     ) -> html.Div:
-        title = "SLA Dashboard"
+
         if results.connection_matrix.num_connections_with_data() > 0:
             content = self.make_matrix_content(results, config, metric)
         else:
@@ -70,64 +68,55 @@ class MatrixView:
 
         return html.Div(
             children=[
-                html.H1(children=title, className="header_main"),
+                html.Div(children=self.make_header_content(results, metric), className="main_header"),
                 html.Div(children=content, className="main_container"),
             ]
         )
 
-    def make_matrix_content(self, results: MeshResults, config: MeshConfig, metric: MetricType) -> List:
+    def make_header_content(self, results: MeshResults, metric: MetricType) -> List:
         timestamp_low_iso = results.utc_timestamp_oldest.isoformat() if results.utc_timestamp_oldest else None
         timestamp_high_iso = results.utc_timestamp_newest.isoformat() if results.utc_timestamp_newest else None
+        title = html.Div(children=html.Span("SLA Dashboard"), className="header_title")
+
+        if results.connection_matrix.num_connections_with_data() == 0:
+            return [title]
+        else:
+            return [
+                title,
+                html.Div(
+                    children=[
+                        dcc.Dropdown(
+                            id=self.METRIC_SELECTOR,
+                            options=[{"label": f"{m.value} [{m.unit}]", "value": m.value} for m in MetricType],
+                            value=metric.value,
+                            clearable=False,
+                            className="dropdowns",
+                        ),
+                    ],
+                    className="metric_selector",
+                ),
+                html.Div(
+                    children=[
+                        html.Span("Time range: "),
+                        html.Span(
+                            className="header-timestamp",
+                            id="timestamp-low",
+                            title=timestamp_low_iso,
+                        ),
+                        html.Span(" - ", className="header-timestamp"),
+                        html.Span(
+                            className="header-timestamp",
+                            id="timestamp-high",
+                            title=timestamp_high_iso,
+                        ),
+                    ],
+                    className="time_range",
+                ),
+            ]
+
+    def make_matrix_content(self, results: MeshResults, config: MeshConfig, metric: MetricType) -> List:
         matrix_table = self._make_matrix_table(results, config, metric)
         return [
-            html.Table(
-                className="table-selector-timerange",
-                children=html.Tbody(
-                    children=[
-                        html.Tr(
-                            [
-                                html.Td(
-                                    html.Div(
-                                        children=[
-                                            dcc.Dropdown(
-                                                id=self.METRIC_SELECTOR,
-                                                options=[
-                                                    {"label": f"{m.value} [{m.unit}]", "value": m.value}
-                                                    for m in MetricType
-                                                ],
-                                                value=metric.value,
-                                                clearable=False,
-                                                className="dropdowns",
-                                            ),
-                                        ],
-                                        className="select_container",
-                                    )
-                                ),
-                                html.Td(
-                                    html.H2(
-                                        children=[
-                                            html.Span("Time range: "),
-                                            html.Span(
-                                                className="header-timestamp",
-                                                id="timestamp-low",
-                                                title=timestamp_low_iso,
-                                            ),
-                                            html.Span(" - ", className="header-timestamp"),
-                                            html.Span(
-                                                className="header-timestamp",
-                                                id="timestamp-high",
-                                                title=timestamp_high_iso,
-                                            ),
-                                        ],
-                                        className="header__subTitle",
-                                    )
-                                ),
-                            ]
-                        )
-                    ],
-                ),
-            ),
-            html.Br(),
             html.Div(
                 children=[
                     html.Div(className="scrollbox", children=matrix_table),
@@ -135,10 +124,12 @@ class MatrixView:
             ),
         ]
 
+    # noinspection PyMethodMayBeStatic
     def make_no_data_content(self, data_history_seconds: int) -> List:
         no_data = f"No test results available for the last {int(data_history_seconds)} seconds"
         return [html.H1(no_data), html.Br(), html.Br()]
 
+    # noinspection PyPep8Naming
     def _make_matrix_table(self, results: MeshResults, config: MeshConfig, metric_type: MetricType) -> html.Table:
         matrix_rows = self._make_matrix_rows(results, config, metric_type)
         html_rows = []

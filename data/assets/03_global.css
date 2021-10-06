@@ -12,7 +12,7 @@ body {
 /* Text headers */
 h1 {
   color: var(--theme-0);
-  font-size: var(--font-size-xlarge);
+  font-size: var(--font-size-large);
 }
 h2 {
   color: var(--theme-0);
@@ -26,24 +26,46 @@ h3 {
 }
 
 /* Page top horizontal bar */
-.header_main {
+.main_header {
+  font-size: var(--font-size-large);
   background: var(--blue-0);
-  color: var(--blue-4);
+  color: var(--white-0);
   text-align: center;
-  padding: 20px 0 20px;
-  box-shadow: 0 0 20px 0 var(--theme-3);
-  margin-bottom: 0;
-  padding: 0 0 0 0;
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+.header_title {
+  width: 20%;
+  float: left;
 }
 
 /* Text directly below the top bar; timestamp */
-.header__subTitle{
-  width: 100%;
+.time_range {
+  width: 60%;
+  float: left;
+}
+
+.metric_selector {
+  font-size: var(--font-size-medium);
+  width: 20%;
+  float: left;
 }
 
 /* Space containing all the elements, as opposed to the unused space on the left and right side */
 .main_container{
   text-align: center;
-  padding: 30px;
   background-color: var(--white-0);
+  padding: 10px;
+}
+
+/* time series view header formatting */
+.time_series_header_label {
+  text-align: right;
+  padding-left: 20px;
+}
+
+.time_series_header_value {
+  text-align: left;
+  padding-left: 20px;
 }
