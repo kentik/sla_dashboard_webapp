@@ -13,7 +13,7 @@ class RateLimiter:
     def check_and_update(self, key: str = "") -> bool:
         now = int(time.monotonic())
         with self._lock:
-            if now - self._last_update[key] > self._interval_seconds:
+            if self._last_update[key] == 0 or now - self._last_update[key] > self._interval_seconds:
                 self._last_update[key] = now
                 return True
             return False
