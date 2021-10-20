@@ -7,17 +7,21 @@ function run() {
 
     # GENERATE SYNTHETICS
     synthetics_package="generated.synthetics_http_client.synthetics"
-    synthetics_spec="synthetics.openapi.yaml"
+    source_url="https://raw.githubusercontent.com/kentik/api-schema-public/master/gen/openapiv2/kentik/synthetics/v202101beta1/synthetics.swagger.json"
 
     synthetics_client_output_dir="" # empty value -> will reflect synthetics_package
 
-    generate_golang_client_from_openapi3_spec "$synthetics_spec" "$synthetics_package" "$synthetics_client_output_dir"
-    change_ownership_to_current_user "generated"
+    generate_python_client_from_openapi2_spec "${source_url}" "${synthetics_package}" "${synthetics_client_output_dir}"
 }
 
 function stage() {
-    BOLD_BLUE="\e[1m\e[34m"
-    RESET="\e[0m"
+    if [ ${BASH_VERSION%%.*} -lt 5 ]; then
+        BOLD_BLUE="======= "
+        RESET=""
+    else
+        BOLD_BLUE="\e[1m\e[34m"
+        RESET="\e[0m"
+    fi
     msg="$1"
 
     echo
@@ -29,36 +33,48 @@ function check_prerequisites() {
 
     if ! docker --version >/dev/null 2>&1; then
         echo "You need to install docker to run the generator"
-        exit 1
+        fail=1
     fi
 
+    if [ -z $(which curl) ]; then
+        echo "Need 'curl' to fetch and convert OpenAPI spec"
+        fail=1
+    fi
+
+    if [ ${fail} ]; then
+        exit 1
+    fi
     echo "Done"
 }
 
-function generate_golang_client_from_openapi3_spec() {
-    stage "Generating golang client from openapi spec"
+function generate_python_client_from_openapi2_spec() {
 
-    spec_file="$1"
+    spec_url="$1"
     package="$2"
     output_dir="$3"
 
+    # convert OpenAPIv2 spec to OpenAPIv3 in YAML format
+    stage "Fetching and converting OpenAPI spec"
+    spec_file=synthetics.openapi.yaml
+    curl --silent https://converter.swagger.io/api/convert\?url\=${spec_url} -H "Accept: application/yaml" -o ${spec_file}
+
+    gen_dir=${package%%.*}
+    pkg_dir=$(echo ${package} | cut -d '.' -f2)
+    stage "Cleaning up '${gen_dir}'"
+
+    rm -rf ${gen_dir}/{${pkg_dir},__pycache__}
+    mkdir ${gen_dir}/${pkg_dir}  # this avoids the need to change permissions later
+
+    stage "Generating Python client from openapi spec"
     docker run --rm -v "$(pwd):/local" \
         openapitools/openapi-generator-cli generate \
-        -i "/local/$spec_file" \
+        -i "/local/${spec_file}" \
         -g python \
         --package-name "$package" \
         --additional-properties generateSourceCodeOnly=true \
         -o "/local/$output_dir"
 
-    echo "Done"
-}
-
-function change_ownership_to_current_user() {
-    dir="$1"
-    stage "Changing ownership of $dir to $USER"
-
-    sudo chown -R "$USER" "$dir" # by default the generated output is in user:group root:root
-
+    rm ${spec_file}
     echo "Done"
 }
 
