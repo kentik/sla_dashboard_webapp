@@ -63,7 +63,7 @@ function generate_python_client_from_openapi2_spec() {
     stage "Cleaning up '${gen_dir}'"
 
     rm -rf ${gen_dir}/{${pkg_dir},__pycache__}
-    mkdir ${gen_dir}/${pkg_dir}  # this avoids the need to change permissions later
+    mkdir ${gen_dir}/${pkg_dir} # this avoids the need to change permissions later
 
     stage "Generating Python client from openapi spec"
     docker run --rm -v "$(pwd):/local" \
