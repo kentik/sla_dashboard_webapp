@@ -15,7 +15,7 @@ function run() {
 }
 
 function stage() {
-    if [ ${BASH_VERSION%%.*} -lt 5 ]; then
+    if [ "${BASH_VERSION%%.*}" -lt 5 ]; then
         BOLD_BLUE="======= "
         RESET=""
     else
@@ -36,7 +36,7 @@ function check_prerequisites() {
         fail=1
     fi
 
-    if [ -z $(which curl) ]; then
+    if [ -z "$(which curl)" ]; then
         echo "Need 'curl' to fetch and convert OpenAPI spec"
         fail=1
     fi
@@ -56,14 +56,14 @@ function generate_python_client_from_openapi2_spec() {
     # convert OpenAPIv2 spec to OpenAPIv3 in YAML format
     stage "Fetching and converting OpenAPI spec"
     spec_file=synthetics.openapi.yaml
-    curl --silent https://converter.swagger.io/api/convert\?url\=${spec_url} -H "Accept: application/yaml" -o ${spec_file}
+    curl --silent "https://converter.swagger.io/api/convert?url=${spec_url}" -H "Accept: application/yaml" -o ${spec_file}
 
     gen_dir=${package%%.*}
-    pkg_dir=$(echo ${package} | cut -d '.' -f2)
+    pkg_dir=$(echo "${package}" | cut -d '.' -f2)
     stage "Cleaning up '${gen_dir}'"
 
-    rm -rf ${gen_dir}/{${pkg_dir},__pycache__}
-    mkdir ${gen_dir}/${pkg_dir} # this avoids the need to change permissions later
+    rm -rf "${gen_dir}"/"{${pkg_dir},__pycache__}"
+    mkdir -p "${gen_dir}"/"${pkg_dir}" # this avoids the need to change permissions later
 
     stage "Generating Python client from openapi spec"
     docker run --rm -v "$(pwd):/local" \
