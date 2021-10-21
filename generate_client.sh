@@ -9,9 +9,7 @@ function run() {
     synthetics_package="generated.synthetics_http_client.synthetics"
     source_url="https://raw.githubusercontent.com/kentik/api-schema-public/master/gen/openapiv2/kentik/synthetics/v202101beta1/synthetics.swagger.json"
 
-    synthetics_client_output_dir="" # empty value -> will reflect synthetics_package
-
-    generate_python_client_from_openapi2_spec "${source_url}" "${synthetics_package}" "${synthetics_client_output_dir}"
+    generate_python_client_from_openapi2_spec "${source_url}" "${synthetics_package}"
 }
 
 function stage() {
@@ -48,22 +46,20 @@ function check_prerequisites() {
 }
 
 function generate_python_client_from_openapi2_spec() {
-
     spec_url="$1"
     package="$2"
-    output_dir="$3"
+    output_dir=${package//"."/"/"}
+    top_dir=${output_dir%%/*}
 
     # convert OpenAPIv2 spec to OpenAPIv3 in YAML format
     stage "Fetching and converting OpenAPI spec"
-    spec_file=synthetics.openapi.yaml
+    spec_file=${top_dir}/synthetics.openapi.yaml
     curl --silent "https://converter.swagger.io/api/convert?url=${spec_url}" -H "Accept: application/yaml" -o ${spec_file}
 
-    gen_dir=${package%%.*}
-    pkg_dir=$(echo "${package}" | cut -d '.' -f2)
-    stage "Cleaning up '${gen_dir}'"
-
-    rm -rf "${gen_dir}"/"{${pkg_dir},__pycache__}"
-    mkdir -p "${gen_dir}"/"${pkg_dir}" # this avoids the need to change permissions later
+    stage "Cleaning up '${top_dir}'"
+    rm -rf "${output_dir}"
+    rm -rf "${top_dir}"/__pycache__
+    mkdir -p "${output_dir}" # create the output directory to avoid the need to change permissions later
 
     stage "Generating Python client from openapi spec"
     docker run --rm -v "$(pwd):/local" \
@@ -72,9 +68,8 @@ function generate_python_client_from_openapi2_spec() {
         -g python \
         --package-name "$package" \
         --additional-properties generateSourceCodeOnly=true \
-        -o "/local/$output_dir"
+        -o "/local/"
 
-    rm ${spec_file}
     echo "Done"
 }
 
