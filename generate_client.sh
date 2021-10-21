@@ -55,7 +55,7 @@ function generate_python_client_from_openapi2_spec() {
     stage "Fetching and converting OpenAPI spec"
     spec_file=${top_dir}/synthetics.openapi.yaml
     curl --silent "https://converter.swagger.io/api/convert?url=${spec_url}" \
-          -H "Accept: application/yaml" -o "${spec_file}"
+        -H "Accept: application/yaml" -o "${spec_file}"
 
     stage "Cleaning up '${top_dir}'"
     rm -rf "${output_dir}"
