@@ -65,13 +65,7 @@ Running multiple instances of WebApp, for example as WSGI server workers, is saf
 ## Development
 
 1. Prepare virtual environment with `virtualenv venv`
-1. Activate virtual environment with `source venv/bin/activate`
-1. Install requirements with `pip install -r requirements.txt && pip install -r requirements_dev.txt`
-1. (Optionally) Update the local schema as described [here](##Updating-the-local-schema)
-1. Generate synthetics client with `generate_client.sh`
+2. Activate virtual environment with `source venv/bin/activate`
+3. Install requirements with `pip install -r requirements.txt && pip install -r requirements_dev.txt`
+4. Generate synthetics client with `generate_client.sh`
 
-## Updating the local schema
-
-1. Get swagger specification for synthetics from <https://github.com/kentik/api-schema-public/tree/master/gen/openapiv2/kentik/synthetics/v202101beta1>
-1. Convert swagger spec to openapi 3 spec using <https://mermade.org.uk/openapi-converter>
-1. Save the openapi 3 spec as `synthetics.openapi.yaml` in project root directory

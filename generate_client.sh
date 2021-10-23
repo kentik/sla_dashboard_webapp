@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Generate Python client SDK from OpenAPI 3.0.0 spec
+# Generate Python client SDK from OpenAPI spec
 
 function run() {
     check_prerequisites
@@ -14,16 +14,16 @@ function run() {
 
 function stage() {
     if [ "${BASH_VERSION%%.*}" -lt 5 ]; then
-        BOLD_BLUE="======= "
+        EMPHASIZE="======= "
         RESET=""
     else
-        BOLD_BLUE="\e[1m\e[34m"
+        EMPHASIZE="\e[1m\e[34m"
         RESET="\e[0m"
     fi
     msg="$1"
 
     echo
-    echo -e "$BOLD_BLUE$msg$RESET"
+    echo -e "${EMPHASIZE}${msg}${RESET}"
 }
 
 function check_prerequisites() {
@@ -52,17 +52,16 @@ function generate_python_client_from_openapi2_spec() {
     top_dir=${output_dir%%/*}
 
     # convert OpenAPIv2 spec to OpenAPIv3 in YAML format
-    stage "Fetching and converting OpenAPI spec"
-    spec_file=${top_dir}/synthetics.openapi.yaml
-    curl --silent "https://converter.swagger.io/api/convert?url=${spec_url}" \
-        -H "Accept: application/yaml" -o "${spec_file}"
+    stage "Fetching OpenAPI spec"
+    spec_file=${top_dir}/synthetics.openapi.json
+    curl --silent "${spec_url}" -o "${spec_file}"
 
     stage "Cleaning up '${top_dir}'"
     rm -rf "${output_dir}"
     rm -rf "${top_dir}"/__pycache__
     mkdir -p "${output_dir}" # create the output directory to avoid the need to change permissions later
 
-    stage "Generating Python client from openapi spec"
+    stage "Generating Python client from OpenAPI spec"
     docker run --rm -v "$(pwd):/local" \
         openapitools/openapi-generator-cli generate \
         -i "/local/${spec_file}" \
